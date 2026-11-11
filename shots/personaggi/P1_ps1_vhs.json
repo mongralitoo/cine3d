@@ -1,0 +1,165 @@
+{
+ "duration": 3,
+ "aspect": "9:16",
+ "quality": 1080,
+ "frame": 30,
+ "look": {
+  "bg": "#141210",
+  "fog": [
+   4,
+   10
+  ],
+  "exposure": 0.7,
+  "grain": 0.12,
+  "vignette": 0.6,
+  "retro": {
+   "lines": 240,
+   "levels": 18,
+   "crt": 1
+  }
+ },
+ "lights": {
+  "replace": true,
+  "env": 0.25,
+  "add": [
+   {
+    "point": true,
+    "pos": [
+     -0.8,
+     1.9,
+     0.9
+    ],
+    "color": "#ffd9a0",
+    "power": 1.0
+   },
+   {
+    "point": true,
+    "pos": [
+     1.2,
+     2.4,
+     -1.5
+    ],
+    "color": "#9fb0d8",
+    "power": 0.8
+   }
+  ]
+ },
+ "camera": {
+  "lens": 32,
+  "fstop": 16,
+  "pos": [
+   0.1,
+   1.2,
+   1.15
+  ],
+  "look": [
+   0,
+   1.15,
+   0
+  ]
+ },
+ "floor": false,
+ "objects": [
+  {
+   "shape": "plane",
+   "size": [
+    6,
+    6
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "pos": [
+    0,
+    0,
+    0
+   ],
+   "color": "#5a4c42",
+   "tex": "wood",
+   "texScale": 0.7
+  },
+  {
+   "shape": "plane",
+   "size": [
+    6,
+    3
+   ],
+   "pos": [
+    0,
+    1.5,
+    -1.6
+   ],
+   "color": "#7d7872",
+   "tex": "noise",
+   "texScale": 0.8
+  },
+  {
+   "shape": "box",
+   "size": [
+    0.7,
+    1.5,
+    0.04
+   ],
+   "pos": [
+    0.85,
+    0.75,
+    -1.57
+   ],
+   "color": "#a8a49c",
+   "tex": "noise"
+  },
+  {
+   "shape": "plane",
+   "size": [
+    0.45,
+    0.6
+   ],
+   "pos": [
+    -0.75,
+    1.6,
+    -1.58
+   ],
+   "color": "#6a7a9a",
+   "tex": "noise"
+  },
+  {
+   "shape": "box",
+   "size": [
+    1.6,
+    0.45,
+    0.9
+   ],
+   "pos": [
+    -1.3,
+    0.22,
+    -1.0
+   ],
+   "color": "#6d7381",
+   "tex": "noise"
+  },
+  {
+   "shape": "custom",
+   "use": "Pers",
+   "rot": [
+    0,
+    -10,
+    0
+   ],
+   "face": "ps1",
+   "hair": "long",
+   "hairC": "#1a1714",
+   "skin": "#c99a7a",
+   "top": "#7e3b4f",
+   "topStyle": "hoodie",
+   "bottom": "#2e3140",
+   "shoes": "#e8e4dc",
+   "glasses": true,
+   "arms": "front",
+   "noisy": true,
+   "segs": 5,
+   "lips": "#5a3236"
+  }
+ ]
+}

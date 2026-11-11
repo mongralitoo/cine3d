@@ -1,0 +1,193 @@
+{
+ "duration": 3,
+ "aspect": "9:16",
+ "quality": 1080,
+ "frame": 30,
+ "look": {
+  "bg": "#3a2a22",
+  "fog": [
+   5,
+   14
+  ],
+  "exposure": 0.85,
+  "grain": 0.04,
+  "vignette": 0.35,
+  "retro": {
+   "lines": 420,
+   "levels": 40,
+   "crt": 0
+  }
+ },
+ "lights": {
+  "replace": true,
+  "env": 0.55,
+  "add": [
+   {
+    "pos": [
+     2,
+     5,
+     4
+    ],
+    "color": "#fff1d8",
+    "power": 1.6,
+    "shadow": true
+   },
+   {
+    "pos": [
+     -3,
+     2,
+     3
+    ],
+    "color": "#d8e2ff",
+    "power": 0.5
+   }
+  ]
+ },
+ "camera": {
+  "lens": 32,
+  "fstop": 16,
+  "pos": [
+   0.1,
+   1.2,
+   1.2
+  ],
+  "look": [
+   0,
+   1.12,
+   0
+  ]
+ },
+ "floor": false,
+ "objects": [
+  {
+   "shape": "plane",
+   "size": [
+    6,
+    6
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "pos": [
+    0,
+    0,
+    0
+   ],
+   "color": "#b07a48",
+   "tex": "wood",
+   "texScale": 0.6
+  },
+  {
+   "shape": "plane",
+   "size": [
+    6,
+    3
+   ],
+   "pos": [
+    0,
+    1.5,
+    -1.4
+   ],
+   "color": "#a5583f",
+   "tex": "bricks",
+   "texScale": 0.7
+  },
+  {
+   "shape": "box",
+   "size": [
+    0.5,
+    0.62,
+    0.04
+   ],
+   "pos": [
+    -0.75,
+    1.65,
+    -1.36
+   ],
+   "color": "#3a2a1a"
+  },
+  {
+   "shape": "box",
+   "size": [
+    0.42,
+    0.54,
+    0.02
+   ],
+   "pos": [
+    -0.75,
+    1.65,
+    -1.33
+   ],
+   "color": "#c8b49a",
+   "tex": "noise"
+  },
+  {
+   "shape": "box",
+   "size": [
+    0.5,
+    0.62,
+    0.04
+   ],
+   "pos": [
+    0.8,
+    1.55,
+    -1.36
+   ],
+   "color": "#3a2a1a"
+  },
+  {
+   "shape": "box",
+   "size": [
+    0.42,
+    0.54,
+    0.02
+   ],
+   "pos": [
+    0.8,
+    1.55,
+    -1.33
+   ],
+   "color": "#7f9a8a",
+   "tex": "noise"
+  },
+  {
+   "shape": "cyl",
+   "size": [
+    1.4,
+    0.02
+   ],
+   "pos": [
+    0,
+    0.01,
+    0
+   ],
+   "color": "#7b3a3a",
+   "tex": "noise"
+  },
+  {
+   "shape": "custom",
+   "use": "Pers",
+   "rot": [
+    0,
+    8,
+    0
+   ],
+   "face": "old",
+   "hair": "bun",
+   "hairC": "#c9c6c0",
+   "skin": "#efc6a8",
+   "top": "#6b4f7a",
+   "topStyle": "cardigan",
+   "inner": "#efe6d6",
+   "bottom": "#4a3f5a",
+   "bottomStyle": "skirt",
+   "shoes": "#3a2a22",
+   "glasses": true,
+   "arms": "front",
+   "noisy": true,
+   "segs": 7
+  }
+ ]
+}

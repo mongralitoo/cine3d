@@ -1,0 +1,187 @@
+{
+ "duration": 3,
+ "aspect": "9:16",
+ "quality": 1080,
+ "frame": 30,
+ "look": {
+  "bg": "#7ec8ff",
+  "fog": [
+   8,
+   26
+  ],
+  "exposure": 0.9,
+  "grain": 0.03,
+  "vignette": 0.25,
+  "retro": {
+   "lines": 220,
+   "levels": 28,
+   "crt": 0.45
+  }
+ },
+ "lights": {
+  "replace": true,
+  "env": 0.7,
+  "add": [
+   {
+    "pos": [
+     4,
+     8,
+     5
+    ],
+    "color": "#fff6e0",
+    "power": 2.2,
+    "shadow": true
+   }
+  ]
+ },
+ "camera": {
+  "lens": 32,
+  "fstop": 16,
+  "pos": [
+   0.15,
+   1.0,
+   1.15
+  ],
+  "look": [
+   0,
+   1.0,
+   0
+  ]
+ },
+ "floor": false,
+ "objects": [
+  {
+   "shape": "plane",
+   "size": [
+    40,
+    40
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "pos": [
+    0,
+    0,
+    -8
+   ],
+   "color": "#5bbf4a",
+   "tex": "noise",
+   "texScale": 1.5
+  },
+  {
+   "shape": "cyl",
+   "size": [
+    0.25,
+    1.2
+   ],
+   "pos": [
+    -1.6,
+    0.6,
+    -3
+   ],
+   "color": "#7a4a2a",
+   "grid": {
+    "n": [
+     2,
+     1,
+     1
+    ],
+    "gap": [
+     3.6,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "shape": "ico",
+   "size": [
+    1.6
+   ],
+   "pos": [
+    -1.6,
+    1.8,
+    -3
+   ],
+   "color": "#2f9a3a",
+   "grid": {
+    "n": [
+     2,
+     1,
+     1
+    ],
+    "gap": [
+     3.6,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "shape": "box",
+   "size": [
+    6,
+    0.6,
+    0.15
+   ],
+   "pos": [
+    0,
+    0.3,
+    -5
+   ],
+   "color": "#d9b27a",
+   "tex": "wood"
+  },
+  {
+   "shape": "sphere",
+   "size": [
+    0.7
+   ],
+   "pos": [
+    1.5,
+    3.4,
+    -7
+   ],
+   "color": "#ffffff",
+   "rough": 0.9,
+   "grid": {
+    "n": [
+     3,
+     1,
+     1
+    ],
+    "gap": [
+     0.5,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "shape": "custom",
+   "use": "Pers",
+   "rot": [
+    0,
+    10,
+    0
+   ],
+   "scale": 0.85,
+   "head": "box",
+   "hs": 1.75,
+   "face": "kid",
+   "hair": "cap",
+   "hairC": "#e23b3b",
+   "inner": "#e23b3b",
+   "skin": "#f2c49b",
+   "top": "#ffd23f",
+   "topStyle": "tee",
+   "bottom": "#3b6fd8",
+   "bottomStyle": "shorts",
+   "shoes": "#ffffff",
+   "backpack": true,
+   "segs": 6
+  }
+ ]
+}

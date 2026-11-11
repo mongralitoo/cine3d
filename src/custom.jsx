@@ -291,4 +291,110 @@ const Sign = ({o}) => {
   );
 };
 
-export const custom = {Robot, Cat, Floor, Guy, Retro, Sign};
+// ---- configurable character -----------------------------------------------
+// o: head 'box'|'round', hs (head scale), face 'ps1'|'mii'|'old'|'kid', hair 'long'|'bun'|'short'|'cap',
+//    skin, hairC, top, topStyle 'hoodie'|'cardigan'|'polo'|'tee', inner, bottom, bottomStyle 'pants'|'skirt'|'shorts',
+//    shoes, glasses, mustache, arms 'down'|'front', segs (polygon sides), noisy (pixel noise on cloth), smooth (soft face texture)
+const noiseTex = (color, n = 16) => canvasTex(n, n, (g) => {
+  const c = new THREE.Color(), b = new THREE.Color(color);
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) { g.fillStyle = c.copy(b).multiplyScalar(0.86 + hash(x, y, 3) * 0.24).getStyle(); g.fillRect(x, y, 1, 1); }
+});
+const drawFace = (g, kind, ox, oy, skin, o) => {
+  const px = (c, x, y, w = 1, h = 1) => { g.fillStyle = c; g.fillRect(ox + x, oy + y, w, h); };
+  if (kind === 'mii') {
+    for (const x of [9, 21]) { px('#2a2420', x, 13, 2, 4); px('#2a2420', x - 1, 9, 4, 1); px('#2a2420', x - 2, 10, 1, 1); }
+    px('#e29a8c', 5, 18, 4, 2); px('#e29a8c', 23, 18, 4, 2);
+    px('#c97a64', 15, 18, 2, 2);
+    px('#b0443c', 12, 22, 8, 1); px('#b0443c', 11, 21, 1, 1); px('#b0443c', 20, 21, 1, 1); px('#ffffff', 13, 23, 6, 1); px('#b0443c', 13, 24, 6, 1);
+  } else if (kind === 'old') {
+    for (const x of [8, 20]) { px('#2a201c', x, 14, 4, 2); px('#ffffff', x + 1, 14, 1, 1); px('#9a9590', x - 1, 10, 6, 2); px('#c48f74', x, 17, 4, 1); }
+    px('#c48f74', 15, 16, 2, 4); px('#d89a8a', 5, 19, 4, 2); px('#d89a8a', 23, 19, 4, 2);
+    px('#8a3e40', 13, 23, 6, 1); px('#c48f74', 9, 22, 1, 3); px('#c48f74', 22, 22, 1, 3);
+  } else if (kind === 'kid') {
+    for (const x of [7, 19]) { px('#1b1b28', x, 11, 6, 7); px('#ffffff', x + 1, 12, 2, 2); px('#ffffff', x + 4, 16, 1, 1); px('#3d6cc4', x + 1, 15, 4, 2); }
+    px('#ff8f8f', 4, 19, 4, 2); px('#ff8f8f', 24, 19, 4, 2);
+    px('#6b2a2a', 13, 22, 6, 3); px('#e66b6b', 14, 24, 4, 1);
+  } else {
+    for (const x of [7, 21]) { px('#1d1512', x, 12, 4, 5); px('#ffffff', x + 1, 13, 1, 1); px('#5a3a2c', x, 16, 4, 1); px('#2a1d18', x - 1, 9, 6, 1); }
+    px('#d99c7a', 15, 19, 2, 1); px('#7a3b33', 14, 23, 4, 1);
+    if (o.lips) px(o.lips, 13, 23, 6, 2);
+  }
+  if (o.mustache) { px(o.hairC, 11, 20, 10, 2); px(o.hairC, 10, 21, 1, 2); px(o.hairC, 21, 21, 1, 2); }
+};
+
+const Pers = ({o, t}) => {
+  const segs = o.segs ?? 6, hs = o.hs ?? 1, round = o.head === 'round', sk = o.skin || '#e6b48f', hc = o.hairC || '#2a211c';
+  const mat = useMemo(() => {
+    const m = (color, noisy = o.noisy) => (o.lambert === false
+      ? new THREE.MeshStandardMaterial({color, roughness: 0.65})
+      : new THREE.MeshLambertMaterial(noisy ? {map: noiseTex(color)} : {color}));
+    const face = canvasTex(round ? 128 : 32, round ? 64 : 32, (g) => { g.fillStyle = sk; g.fillRect(0, 0, 999, 999); drawFace(g, o.face || 'ps1', round ? 16 : 0, round ? 16 : 0, sk, o); });
+    if (o.smooth) { face.magFilter = face.minFilter = THREE.LinearFilter; }
+    const fm = o.lambert === false ? new THREE.MeshStandardMaterial({map: face, roughness: 0.6}) : new THREE.MeshLambertMaterial({map: face});
+    return {skin: m(sk, false), hair: m(hc), top: m(o.top || '#888'), inner: m(o.inner || '#eee'), bottom: m(o.bottom || '#334'), shoes: m(o.shoes || '#222', false), face: fm, dark: m('#151515', false)};
+  }, []);
+  const Mx = ({p, r = [0, 0, 0], sc = [1, 1, 1], m, children}) => <mesh position={p} rotation={r} scale={sc} material={m} castShadow>{children}</mesh>;
+  const Lb = ({a, b, r, m}) => {
+    const A = new THREE.Vector3(...a), Bv = new THREE.Vector3(...b), d = Bv.clone().sub(A);
+    const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.clone().normalize());
+    return <mesh position={A.clone().add(Bv).multiplyScalar(0.5)} quaternion={q} material={m} castShadow><cylinderGeometry args={[r, r * 0.9, d.length(), segs]} /></mesh>;
+  };
+  const skirt = o.bottomStyle === 'skirt', shorts = o.bottomStyle === 'shorts';
+  const H = 0.13 * hs, hy = 1.3 + H * 0.95, br = Math.sin(t * 2) * 0.006;
+  const front = o.arms === 'front';
+  const tilt = [Math.sin(t * 0.9) * 2 * D + (o.headPitch || 0) * D, (o.headYaw || 0) * D + Math.sin(t * 0.5) * 3 * D, Math.sin(t * 0.7) * 2 * D];
+  return (
+    <group>
+      {[-1, 1].map((k) => (
+        <group key={k}>
+          <Mx p={[k * 0.08, 0.05, 0.03]} m={mat.shoes}><boxGeometry args={[0.1, 0.1, 0.19]} /></Mx>
+          {shorts ? <>
+            <Lb a={[k * 0.08, 0.1, 0]} b={[k * 0.08, 0.45, 0]} r={0.045} m={mat.skin} />
+            <Lb a={[k * 0.08, 0.42, 0]} b={[k * 0.08, 0.66, 0]} r={0.07} m={mat.bottom} />
+          </> : <Lb a={[k * 0.08, 0.1, 0]} b={[k * 0.08, 0.66, 0]} r={skirt ? 0.042 : 0.055} m={skirt ? mat.dark : mat.bottom} />}
+        </group>
+      ))}
+      {skirt && <Mx p={[0, 0.6, 0]} m={mat.bottom}><cylinderGeometry args={[0.16, 0.25, 0.26, segs + 2]} /></Mx>}
+      <Mx p={[0, 0.94, 0]} sc={[1, 1 + br, 0.78]} m={mat.top}><cylinderGeometry args={[0.165, 0.19, 0.58, segs]} /></Mx>
+      {o.topStyle === 'cardigan' && <Mx p={[0, 0.98, 0.115]} m={mat.inner}><boxGeometry args={[0.1, 0.48, 0.04]} /></Mx>}
+      {o.topStyle === 'polo' && <Mx p={[0, 1.22, 0.02]} m={mat.inner}><boxGeometry args={[0.2, 0.05, 0.18]} /></Mx>}
+      {o.topStyle === 'hoodie' && <Mx p={[0, 1.2, -0.08]} m={mat.top}><boxGeometry args={[0.26, 0.1, 0.12]} /></Mx>}
+      {o.backpack && <Mx p={[0, 0.98, -0.18]} m={mat.inner}><boxGeometry args={[0.26, 0.32, 0.12]} /></Mx>}
+      <Lb a={[0, 1.2, 0]} b={[0, 1.3, 0]} r={0.042} m={mat.skin} />
+      {[-1, 1].map((k) => {
+        const sh = [k * 0.2, 1.17, 0], el = front ? [k * 0.21, 0.94, 0.05] : [k * 0.23, 0.92, -0.01], ha = front ? [k * 0.05, 0.8, 0.16] : [k * 0.24, 0.7, 0.01];
+        return (
+          <group key={k}>
+            <Lb a={sh} b={el} r={0.05} m={mat.top} />
+            <Lb a={el} b={ha} r={0.045} m={o.topStyle === 'polo' || o.topStyle === 'tee' ? mat.skin : mat.top} />
+            <Mx p={[ha[0], ha[1] - 0.03, ha[2]]} m={mat.skin}>{round ? <sphereGeometry args={[0.04, 10, 8]} /> : <boxGeometry args={[0.06, 0.07, 0.05]} />}</Mx>
+          </group>
+        );
+      })}
+      <group position={[0, hy, 0]} rotation={tilt}>
+        {round
+          ? <Mx p={[0, 0, 0]} sc={[1, 1.08, 1]} m={mat.face}><sphereGeometry args={[H, 32, 24]} /></Mx>
+          : <Mx p={[0, 0, 0]} m={[mat.skin, mat.skin, mat.skin, mat.skin, mat.face, mat.skin]}><boxGeometry args={[H * 1.75, H * 2, H * 1.7]} /></Mx>}
+        {round ? <>
+          {o.hair !== 'none' && <Mx p={[0, H * 0.12, -H * 0.06]} r={[-14 * D, 0, 0]} sc={[1.07, 1.1, 1.08]} m={mat.hair}><sphereGeometry args={[H, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.42]} /></Mx>}
+          {o.hair === 'cap' && <Mx p={[0, H * 0.62, H * 0.75]} r={[8 * D, 0, 0]} m={mat.hair}><boxGeometry args={[H * 1.3, H * 0.08, H * 0.9]} /></Mx>}
+          {o.hair === 'long' && <Mx p={[0, -H * 0.5, -H * 0.55]} m={mat.hair}><boxGeometry args={[H * 2, H * 2.2, H * 0.4]} /></Mx>}
+          {o.hair === 'bun' && <Mx p={[0, H * 1.1, -H * 0.35]} m={mat.hair}><sphereGeometry args={[H * 0.42, 16, 12]} /></Mx>}
+          {[-1, 1].map((k) => <Mx key={k} p={[k * H * 1.02, -H * 0.05, 0]} sc={[0.5, 1, 0.8]} m={mat.skin}><sphereGeometry args={[H * 0.25, 10, 8]} /></Mx>)}
+        </> : <>
+          <Mx p={[0, H * 1.12, -H * 0.05]} m={mat.hair}><boxGeometry args={[H * 1.9, H * 0.42, H * 1.85]} /></Mx>
+          <Mx p={[0, o.hair === 'long' ? -H * 0.6 : H * 0.2, -H * 0.92]} m={mat.hair}><boxGeometry args={[H * 1.92, o.hair === 'long' ? H * 3.3 : H * 1.6, H * 0.25]} /></Mx>
+          {[-1, 1].map((k) => <Mx key={k} p={[k * H * 0.95, o.hair === 'long' ? -H * 0.5 : H * 0.35, -H * 0.1]} m={mat.hair}><boxGeometry args={[H * 0.22, o.hair === 'long' ? H * 3.1 : H * 1.3, H * 1.65]} /></Mx>)}
+          {o.hair === 'long' && <Mx p={[0, H * 0.78, H * 0.88]} m={mat.hair}><boxGeometry args={[H * 1.85, H * 0.42, H * 0.12]} /></Mx>}
+          {o.hair === 'bun' && <Mx p={[0, H * 1.55, -H * 0.5]} m={mat.hair}><boxGeometry args={[H * 0.8, H * 0.7, H * 0.8]} /></Mx>}
+          {o.hair === 'cap' && <Mx p={[0, H * 1.0, H * 1.2]} m={mat.inner}><boxGeometry args={[H * 1.7, H * 0.1, H * 0.9]} /></Mx>}
+        </>}
+        {o.glasses && [-1, 1].map((k) => (
+          <Mx key={k} p={[k * H * 0.42, H * (round ? 0.12 : 0.1), H * (round ? 1.02 : 0.88)]} m={mat.dark}><torusGeometry args={[H * 0.3, H * 0.05, 4, 8]} /></Mx>
+        ))}
+      </group>
+    </group>
+  );
+};
+
+export const custom = {Robot, Cat, Floor, Guy, Retro, Sign, Pers};

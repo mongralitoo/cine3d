@@ -1,0 +1,181 @@
+{
+ "duration": 3,
+ "aspect": "9:16",
+ "quality": 1080,
+ "frame": 30,
+ "look": {
+  "bg": "#1f2028",
+  "fog": [
+   5,
+   16
+  ],
+  "exposure": 0.8,
+  "grain": 0.04,
+  "vignette": 0.45,
+  "bloom": 0.3,
+  "retro": {
+   "lines": 460,
+   "levels": 44,
+   "crt": 0.3
+  }
+ },
+ "lights": {
+  "replace": true,
+  "env": 0.45,
+  "add": [
+   {
+    "pos": [
+     -1.5,
+     3,
+     -3
+    ],
+    "color": "#ffcf8a",
+    "power": 2.2,
+    "shadow": true
+   },
+   {
+    "pos": [
+     2,
+     2.5,
+     4
+    ],
+    "color": "#b9c8ff",
+    "power": 0.7
+   }
+  ]
+ },
+ "camera": {
+  "lens": 40,
+  "fstop": 16,
+  "pos": [
+   0.25,
+   1.25,
+   1.35
+  ],
+  "look": [
+   0,
+   1.2,
+   0
+  ]
+ },
+ "floor": false,
+ "objects": [
+  {
+   "shape": "plane",
+   "size": [
+    6,
+    6
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "pos": [
+    0,
+    0,
+    0
+   ],
+   "color": "#6a4a32",
+   "tex": "wood",
+   "texScale": 0.5,
+   "rough": 0.6
+  },
+  {
+   "shape": "plane",
+   "size": [
+    6,
+    3
+   ],
+   "pos": [
+    0,
+    1.5,
+    -1.8
+   ],
+   "color": "#5a4130"
+  },
+  {
+   "shape": "box",
+   "size": [
+    0.9,
+    1.2,
+    0.04
+   ],
+   "pos": [
+    -0.7,
+    1.4,
+    -1.76
+   ],
+   "color": "#ffe2b0",
+   "glow": "#ffcf8a",
+   "glowPower": 1.2
+  },
+  {
+   "shape": "box",
+   "size": [
+    0.04,
+    1.25,
+    0.06
+   ],
+   "pos": [
+    -0.7,
+    1.4,
+    -1.72
+   ],
+   "color": "#3a2a1f",
+   "grid": {
+    "n": [
+     3,
+     1,
+     1
+    ],
+    "gap": [
+     0.3,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "shape": "box",
+   "size": [
+    0.5,
+    0.5,
+    0.5
+   ],
+   "bevel": 0.08,
+   "pos": [
+    1.0,
+    0.25,
+    -0.9
+   ],
+   "color": "#4f7a5a",
+   "rough": 0.7
+  },
+  {
+   "shape": "custom",
+   "use": "Pers",
+   "rot": [
+    0,
+    -6,
+    0
+   ],
+   "head": "round",
+   "hs": 1.35,
+   "face": "mii",
+   "hair": "short",
+   "hairC": "#2e241c",
+   "skin": "#f0c7a0",
+   "top": "#cfd6c8",
+   "topStyle": "polo",
+   "inner": "#ffffff",
+   "bottom": "#8a8a40",
+   "shoes": "#e8e2d8",
+   "mustache": true,
+   "segs": 8,
+   "smooth": false,
+   "lambert": true,
+   "noisy": true
+  }
+ ]
+}
