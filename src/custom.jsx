@@ -68,7 +68,7 @@ const Bubble = ({t, spans, y, x, side}) => {
 const GREY = '#6c6d6b', LIGHT = '#8f8c84', DARK = '#5f605f';
 
 const Robot = ({o, t}) => {
-  const amp = walkAmp(t), s = sitP(t), ph = t * 2 * Math.PI * 0.9;
+  const amp = o.still ? 0 : walkAmp(t), s = o.still ? 0 : sitP(t), ph = t * 2 * Math.PI * 0.9;
   const sw = Math.sin(ph) * 28 * D * amp;
   const bob = Math.abs(Math.cos(ph)) * 0.035 * amp - s * 0.25;
   const talk = talking('robot', t);
@@ -159,4 +159,53 @@ const Floor = () => {
   return <primitive object={mesh} />;
 };
 
-export const custom = {Robot, Cat, Floor};
+// ---- low-poly character (flat shaded, PS2-era proportions, original design) ----
+const F = ({geo, p = [0, 0, 0], r = [0, 0, 0], sc = [1, 1, 1], color}) => (
+  <mesh position={p} rotation={r} scale={sc} castShadow receiveShadow>
+    {geo}
+    <meshStandardMaterial color={color} roughness={0.75} flatShading />
+  </mesh>
+);
+const cyl = (rt, rb, h, n = 6) => <cylinderGeometry args={[rt, rb, h, n]} />;
+const SKIN = '#9a6446', HOOD = '#d9622b', HOOD2 = '#b84f22', PANTS = '#4f5140', SHOE = '#ecebe6';
+
+const Guy = ({o, t}) => {
+  const br = Math.sin(t * 2.2) * 0.008, sway = Math.sin(t * 1.1) * 2 * D;
+  return (
+    <group rotation={[0, (o.turn || 0) * D, 0]}>
+      {[-1, 1].map((k) => (
+        <group key={k}>
+          <F geo={<boxGeometry args={[0.13, 0.09, 0.3]} />} p={[k * 0.11, 0.045, 0.04]} color={SHOE} />
+          <F geo={<boxGeometry args={[0.135, 0.03, 0.31]} />} p={[k * 0.11, 0.015, 0.04]} color="#c9502a" />
+          <F geo={cyl(0.085, 0.07, 0.46)} p={[k * 0.11, 0.32, 0]} color={PANTS} />
+          <F geo={cyl(0.105, 0.088, 0.44)} p={[k * 0.11, 0.76, 0]} color={PANTS} />
+          <F geo={<boxGeometry args={[0.06, 0.12, 0.09]} />} p={[k * 0.2, 0.74, 0.02]} color="#45473a" />
+        </group>
+      ))}
+      <group position={[0, 0, 0]} rotation={[0, 0, sway]}>
+        <F geo={cyl(0.2, 0.18, 0.18, 7)} p={[0, 0.98, 0]} sc={[1, 1, 0.75]} color={PANTS} />
+        <F geo={cyl(0.235, 0.2, 0.56, 7)} p={[0, 1.33, 0]} sc={[1, 1 + br, 0.72]} color={HOOD} />
+        <F geo={<boxGeometry args={[0.26, 0.13, 0.04]} />} p={[0, 1.17, 0.145]} color={HOOD2} />
+        <F geo={<torusGeometry args={[0.12, 0.05, 5, 8]} />} p={[0, 1.6, -0.05]} r={[80 * D, 0, 0]} color={HOOD2} />
+        <F geo={cyl(0.055, 0.06, 0.09)} p={[0, 1.64, 0]} color={SKIN} />
+        <group position={[0, 1.79, 0.01]} rotation={[Math.sin(t * 0.8) * 2 * D, Math.sin(t * 0.6) * 6 * D, 0]}>
+          <F geo={<icosahedronGeometry args={[0.13, 1]} />} sc={[0.88, 1.12, 0.95]} color={SKIN} />
+          <F geo={cyl(0.095, 0.135, 0.13, 8)} p={[0, 0.1, -0.005]} color="#24262b" />
+          <F geo={cyl(0.137, 0.137, 0.035, 8)} p={[0, 0.045, -0.005]} color="#33363c" />
+          <F geo={<boxGeometry args={[0.03, 0.05, 0.04]} />} p={[0, -0.01, 0.125]} color="#8a573b" />
+          {[-1, 1].map((k) => <F key={k} geo={<boxGeometry args={[0.035, 0.018, 0.01]} />} p={[k * 0.045, 0.025, 0.118]} color="#1a1210" />)}
+          <F geo={<boxGeometry args={[0.06, 0.012, 0.01]} />} p={[0, -0.065, 0.112]} color="#5e3626" />
+        </group>
+        {[-1, 1].map((k) => (
+          <group key={k} position={[k * 0.27, 1.52, 0]} rotation={[Math.sin(t * 1.1 + k) * 2 * D, 0, k * 9 * D]}>
+            <F geo={cyl(0.07, 0.06, 0.33)} p={[0, -0.16, 0]} color={HOOD} />
+            <F geo={cyl(0.06, 0.055, 0.3)} p={[0, -0.47, 0.01]} color={HOOD} />
+            <F geo={<icosahedronGeometry args={[0.055, 0]} />} p={[0, -0.66, 0.02]} sc={[0.8, 1.2, 0.9]} color={SKIN} />
+          </group>
+        ))}
+      </group>
+    </group>
+  );
+};
+
+export const custom = {Robot, Cat, Floor, Guy};

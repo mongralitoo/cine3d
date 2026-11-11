@@ -1,0 +1,263 @@
+{
+ "duration": 3,
+ "aspect": "9:16",
+ "quality": 1080,
+ "lights": {
+  "preset": "studio",
+  "env": 0.6
+ },
+ "look": {
+  "bg": "#e8c9a5",
+  "fog": false,
+  "exposure": 0.62,
+  "grain": 0.04,
+  "vignette": 0.3
+ },
+ "camera": {
+  "lens": 100,
+  "fstop": 4,
+  "pos": [
+   6.2,
+   5.0,
+   8.0
+  ],
+  "look": [
+   -0.1,
+   0.9,
+   0
+  ]
+ },
+ "floor": false,
+ "objects": [
+  {
+   "shape": "box",
+   "size": [
+    2.6,
+    0.25,
+    2.6
+   ],
+   "bevel": 0.08,
+   "pos": [
+    0,
+    0.12,
+    0
+   ],
+   "color": "#c99a6b",
+   "rough": 0.6
+  },
+  {
+   "shape": "box",
+   "size": [
+    2.6,
+    0.55,
+    2.6
+   ],
+   "bevel": 0.08,
+   "pos": [
+    0,
+    -0.3,
+    0
+   ],
+   "color": "#6d4c33",
+   "rough": 0.8
+  },
+  {
+   "shape": "custom",
+   "use": "Robot",
+   "still": true,
+   "pos": [
+    -0.5,
+    0.25,
+    0.15
+   ],
+   "scale": 0.75,
+   "rot": [
+    0,
+    25,
+    0
+   ]
+  },
+  {
+   "shape": "box",
+   "size": [
+    1.0,
+    0.06,
+    0.55
+   ],
+   "bevel": 0.02,
+   "pos": [
+    0.65,
+    0.72,
+    0.2
+   ],
+   "color": "#f3ede4"
+  },
+  {
+   "shape": "box",
+   "size": [
+    0.06,
+    0.45,
+    0.06
+   ],
+   "pos": [
+    0.65,
+    0.47,
+    0.2
+   ],
+   "color": "#f3ede4",
+   "grid": {
+    "n": [
+     2,
+     1,
+     2
+    ],
+    "gap": [
+     0.85,
+     0,
+     0.42
+    ]
+   }
+  },
+  {
+   "shape": "box",
+   "size": [
+    0.42,
+    0.02,
+    0.3
+   ],
+   "bevel": 0.01,
+   "pos": [
+    0.6,
+    0.76,
+    0.25
+   ],
+   "color": "#3b3f46",
+   "metal": 0.6,
+   "rough": 0.3
+  },
+  {
+   "shape": "box",
+   "size": [
+    0.42,
+    0.28,
+    0.02
+   ],
+   "bevel": 0.01,
+   "pos": [
+    0.6,
+    0.9,
+    0.11
+   ],
+   "rot": [
+    -12,
+    0,
+    0
+   ],
+   "color": "#3b3f46",
+   "glow": "#9fd8ff",
+   "glowPower": 0.6
+  },
+  {
+   "shape": "cyl",
+   "size": [
+    0.26,
+    0.3,
+    0.32
+   ],
+   "pos": [
+    1.0,
+    0.4,
+    -0.9
+   ],
+   "color": "#e9e1d6"
+  },
+  {
+   "shape": "ico",
+   "size": [
+    0.5
+   ],
+   "pos": [
+    1.0,
+    0.75,
+    -0.9
+   ],
+   "color": "#5f9b57",
+   "rough": 0.7
+  },
+  {
+   "shape": "box",
+   "size": [
+    0.12,
+    0.34,
+    0.24
+   ],
+   "bevel": 0.01,
+   "pos": [
+    -1.0,
+    0.42,
+    -1.0
+   ],
+   "color": "#e8735a",
+   "grid": {
+    "n": [
+     5,
+     1,
+     1
+    ],
+    "gap": [
+     0.14,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "shape": "sphere",
+   "size": [
+    0.32
+   ],
+   "pos": [
+    -0.5,
+    2.15,
+    0.15
+   ],
+   "color": "#fff",
+   "glow": "#ffd27a",
+   "glowPower": 3,
+   "float": [
+    0.04,
+    0.5
+   ]
+  },
+  {
+   "shape": "cyl",
+   "size": [
+    0.14,
+    0.12
+   ],
+   "pos": [
+    -0.5,
+    1.95,
+    0.15
+   ],
+   "color": "#9aa0a6",
+   "metal": 0.8,
+   "rough": 0.3,
+   "float": [
+    0.04,
+    0.5
+   ]
+  }
+ ],
+ "titles": [
+  {
+   "text": "Ogni grande idea parte da qui",
+   "at": 0,
+   "place": "top",
+   "size": 0.075,
+   "weight": 800,
+   "color": "#ffffff"
+  }
+ ],
+ "frame": 20
+}
