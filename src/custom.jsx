@@ -351,17 +351,32 @@ const Pers = ({o, t}) => {
   const mc = o.mouth;   // optional per-frame mouth curve (0..1) at o.mouthFps, e.g. from the voice track
   const mouth = mc ? mc[Math.max(0, Math.min(mc.length - 1, Math.floor(t * (o.mouthFps || 30))))] || 0
     : eTalk * Math.abs(Math.sin(t * 11)) * (0.6 + 0.4 * Math.sin(t * 3.1));
-  const tilt = [Math.sin(t * 0.9) * 2 * D + (o.headPitch || 0) * D - eCheer * 10 * D + mouth * 3 * D, (o.headYaw || 0) * D * (A ? eTurn : 1) + Math.sin(t * 0.5) * 3 * D, Math.sin(t * 0.7) * 2 * D + eWave * Math.sin(t * 3) * 4 * D];
+  // speaking / listening envelopes (smoothed over ~1 s) drive gestures and nods
+  const win = (c, r) => { if (!c) return 0; const f = Math.floor(t * 30); let sm = 0, nn = 0; for (let i = f - r; i <= f + r; i += 2) if (i >= 0 && i < c.length) { sm += c[i]; nn++; } return nn ? sm / nn : 0; };
+  const talkE = o.gest ? Math.min(1, win(mc, 14) * 2.5) : 0, lisE = Math.min(1, win(o.listen, 14) * 2.5);
+  // walking along o.path [{t, x, z, yaw}] (absolute world positions, yaw in degrees)
+  const P = o.path, S = o.scale ?? 1;
+  const at = (tt) => {
+    if (!P) return [0, 0, 0];
+    if (tt <= P[0].t) return [P[0].x, P[0].z, P[0].yaw];
+    const Lk = P[P.length - 1]; if (tt >= Lk.t) return [Lk.x, Lk.z, Lk.yaw];
+    const i = P.findIndex((k) => k.t > tt) - 1, a = P[i], b = P[i + 1], e = sstep(0, 1, (tt - a.t) / (b.t - a.t));
+    return [a.x + (b.x - a.x) * e, a.z + (b.z - a.z) * e, a.yaw + (b.yaw - a.yaw) * e];
+  };
+  const [px, pz, yaw] = at(t), p1 = at(t - 0.06), p2 = at(t + 0.06);
+  const wa = P ? Math.min(1, Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) / 0.12 / 0.7) : 0, wph = t * 2 * Math.PI * 1.7;
+  const fz = (k) => k * Math.sin(wph) * 0.16 * wa, lift = (k) => Math.max(0, k * Math.cos(wph)) * 0.05 * wa;
+  const tilt = [Math.sin(t * 0.9) * 2 * D + (o.headPitch || 0) * D - eCheer * 10 * D + mouth * 3 * D + lisE * Math.max(0, Math.sin(t * 2.6)) * 7 * D, (o.headYaw || 0) * D * (A ? eTurn : 1) + Math.sin(t * 0.5) * 3 * D, Math.sin(t * 0.7) * 2 * D + eWave * Math.sin(t * 3) * 4 * D];
   const mix3 = (a, b, e) => a.map((v, i) => v + (b[i] - v) * e);
   return (
-    <group position={[0, hop, 0]}>
+    <group position={[px / S, hop + Math.abs(Math.sin(wph)) * 0.025 * wa, pz / S]} rotation={[0, yaw * D + Math.sin(t * 0.8) * 3 * D * talkE, 0]}>
       {[-1, 1].map((k) => (
         <group key={k}>
-          <Mx p={[k * 0.08, 0.05, 0.03]} m={mat.shoes}><boxGeometry args={[0.1, 0.1, 0.19]} /></Mx>
+          <Mx p={[k * 0.08, 0.05 + lift(k), 0.03 + fz(k)]} m={mat.shoes}><boxGeometry args={[0.1, 0.1, 0.19]} /></Mx>
           {shorts ? <>
-            <Lb a={[k * 0.08, 0.1, 0]} b={[k * 0.08, 0.45, 0]} r={0.045} m={mat.skin} />
-            <Lb a={[k * 0.08, 0.42, 0]} b={[k * 0.08, 0.66, 0]} r={0.07} m={mat.bottom} />
-          </> : <Lb a={[k * 0.08, 0.1, 0]} b={[k * 0.08, 0.66, 0]} r={skirt ? 0.042 : 0.055} m={skirt ? mat.dark : mat.bottom} />}
+            <Lb a={[k * 0.08, 0.1 + lift(k), fz(k)]} b={[k * 0.08, 0.45, fz(k) * 0.45]} r={0.045} m={mat.skin} />
+            <Lb a={[k * 0.08, 0.42, fz(k) * 0.4]} b={[k * 0.08, 0.66, 0]} r={0.07} m={mat.bottom} />
+          </> : <Lb a={[k * 0.08, 0.1 + lift(k), fz(k)]} b={[k * 0.08, 0.66, 0]} r={skirt ? 0.042 : 0.055} m={skirt ? mat.dark : mat.bottom} />}
         </group>
       ))}
       {skirt && <Mx p={[0, 0.6, 0]} m={mat.bottom}><cylinderGeometry args={[0.16, 0.25, 0.26, segs + 2]} /></Mx>}
@@ -375,6 +390,10 @@ const Pers = ({o, t}) => {
         const sh = [k * 0.2, 1.17, 0];
         let el = front ? [k * 0.21, 0.94, 0.05] : [k * 0.23, 0.92, -0.01], ha = front ? [k * 0.05, 0.8, 0.16] : [k * 0.24, 0.7, 0.01];
         const up = Math.max(eCheer, k === 1 ? eWave : 0);
+        const gw = talkE * c01(Math.sin(t * 1.3 + (k > 0 ? 0 : 2.4)) + 0.35);
+        el = mix3(el, [k * 0.26, 1.0, 0.12], gw);
+        ha = mix3(ha, [k * 0.15, 1.1 + 0.05 * Math.sin(t * 5 + k) + mouth * 0.05, 0.3], gw);
+        ha = [ha[0], ha[1], ha[2] - k * Math.sin(wph) * 0.12 * wa * (1 - gw)];
         el = mix3(el, [k * 0.31, 1.32, 0.02], up);
         ha = mix3(ha, [k * (0.27 + (k === 1 ? eWave * 0.07 * Math.sin(t * 11) : 0)), 1.58 + eCheer * Math.sin(t * 9 + k) * 0.03, 0.06], up);
         return (

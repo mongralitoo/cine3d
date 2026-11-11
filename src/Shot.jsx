@@ -178,13 +178,13 @@ const Title = ({ti, t, fps, h}) => {
 export const Shot = (spec) => {
   const frame = useCurrentFrame();
   const {fps, width, height} = useVideoConfig();
-  const t = frame / fps + (spec.t0 || 0), look = spec.look || {}, cam = spec.camera || {};
+  const tl = frame / fps, t = tl + (spec.t0 || 0), look = spec.look || {}, cam = spec.camera || {};
   const L = typeof spec.lights === 'string' ? {preset: spec.lights} : spec.lights || {};
   const P = PRESETS[L.preset || 'studio'] || PRESETS.studio;
   const lights = [...(L.replace ? [] : P.lights), ...(L.add || [])];
   const bg = look.bg || '#0c0d10', fog = look.fog === undefined ? [12, 60] : look.fog;
   const floor = spec.floor === undefined ? {} : spec.floor;
-  const focus = cam.focus || sample((cam.keys || [{t: 0, look: cam.look || [0, 1, 0]}]).map((x) => ({look: [0, 1, 0], ...x})), t, fps, cam.ease).look;
+  const focus = cam.focus || sample((cam.keys || [{t: 0, look: cam.look || [0, 1, 0]}]).map((x) => ({look: [0, 1, 0], ...x})), tl, fps, cam.ease).look;
   const fstop = cam.fstop ?? 2.8;
   return (
     <AbsoluteFill style={{backgroundColor: bg}}>
@@ -193,7 +193,7 @@ export const Shot = (spec) => {
         <color attach="background" args={[bg]} />
         {fog && <fog attach="fog" args={[bg, fog[0], fog[1]]} />}
         <Env intensity={L.env ?? P.env} />
-        <Cam cam={cam} t={t} fps={fps} aspect={width / height} />
+        <Cam cam={cam} t={tl} fps={fps} aspect={width / height} />
         {lights.map((l, i) => l.point
           ? <pointLight key={i} position={l.pos} color={l.color} intensity={(l.power ?? 2) * 20} decay={2} castShadow={!!l.shadow} />
           : <directionalLight key={i} position={l.pos} color={l.color} intensity={l.power ?? 2} castShadow={!!l.shadow}
@@ -208,7 +208,7 @@ export const Shot = (spec) => {
         {(spec.objects || []).map((o, i) => <Obj key={i} o={o} t={t} fps={fps} />)}
         {look.post !== false && <Post focusPoint={focus} fstop={fstop} look={look} frame={frame} />}
       </ThreeCanvas>
-      {(spec.titles || []).map((ti, i) => <Title key={i} ti={ti} t={t} fps={fps} h={Math.min(width, height)} />)}
+      {(spec.titles || []).map((ti, i) => <Title key={i} ti={ti} t={tl} fps={fps} h={Math.min(width, height)} />)}
     </AbsoluteFill>
   );
 };
