@@ -178,7 +178,7 @@ const Title = ({ti, t, fps, h}) => {
 export const Shot = (spec) => {
   const frame = useCurrentFrame();
   const {fps, width, height} = useVideoConfig();
-  const t = frame / fps, look = spec.look || {}, cam = spec.camera || {};
+  const t = frame / fps + (spec.t0 || 0), look = spec.look || {}, cam = spec.camera || {};
   const L = typeof spec.lights === 'string' ? {preset: spec.lights} : spec.lights || {};
   const P = PRESETS[L.preset || 'studio'] || PRESETS.studio;
   const lights = [...(L.replace ? [] : P.lights), ...(L.add || [])];

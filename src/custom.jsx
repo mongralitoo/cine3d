@@ -348,8 +348,10 @@ const Pers = ({o, t}) => {
   const eWave = env(A, 'wave', t), eCheer = env(A, 'cheer', t), eTalk = env(A, 'talk', t);
   const hopW = (A || []).find((x) => x.k === 'hop' && t > x.a && t < x.b);
   const hop = hopW ? Math.abs(Math.sin((Math.PI * (t - hopW.a)) / 0.55)) * 0.16 : 0;
-  const mouth = eTalk * Math.abs(Math.sin(t * 11)) * (0.6 + 0.4 * Math.sin(t * 3.1));
-  const tilt = [Math.sin(t * 0.9) * 2 * D + (o.headPitch || 0) * D - eCheer * 10 * D, (o.headYaw || 0) * D * (A ? eTurn : 1) + Math.sin(t * 0.5) * 3 * D, Math.sin(t * 0.7) * 2 * D + eWave * Math.sin(t * 3) * 4 * D];
+  const mc = o.mouth;   // optional per-frame mouth curve (0..1) at o.mouthFps, e.g. from the voice track
+  const mouth = mc ? mc[Math.max(0, Math.min(mc.length - 1, Math.floor(t * (o.mouthFps || 30))))] || 0
+    : eTalk * Math.abs(Math.sin(t * 11)) * (0.6 + 0.4 * Math.sin(t * 3.1));
+  const tilt = [Math.sin(t * 0.9) * 2 * D + (o.headPitch || 0) * D - eCheer * 10 * D + mouth * 3 * D, (o.headYaw || 0) * D * (A ? eTurn : 1) + Math.sin(t * 0.5) * 3 * D, Math.sin(t * 0.7) * 2 * D + eWave * Math.sin(t * 3) * 4 * D];
   const mix3 = (a, b, e) => a.map((v, i) => v + (b[i] - v) * e);
   return (
     <group position={[0, hop, 0]}>
