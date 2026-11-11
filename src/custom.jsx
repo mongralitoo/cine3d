@@ -322,6 +322,8 @@ const drawFace = (g, kind, ox, oy, skin, o) => {
   if (o.mustache) { px(o.hairC, 11, 20, 10, 2); px(o.hairC, 10, 21, 1, 2); px(o.hairC, 21, 21, 1, 2); }
 };
 
+// acts: [{k:'turn'|'wave'|'cheer'|'talk'|'hop', a, b}] time windows in seconds
+const env = (acts, k, t) => Math.max(0, ...(acts || []).filter((x) => x.k === k).map((x) => sstep(x.a, x.a + 0.3, t) * (1 - sstep(x.b - 0.3, x.b, t))));
 const Pers = ({o, t}) => {
   const segs = o.segs ?? 6, hs = o.hs ?? 1, round = o.head === 'round', sk = o.skin || '#e6b48f', hc = o.hairC || '#2a211c';
   const mat = useMemo(() => {
@@ -342,9 +344,15 @@ const Pers = ({o, t}) => {
   const skirt = o.bottomStyle === 'skirt', shorts = o.bottomStyle === 'shorts';
   const H = 0.13 * hs, hy = 1.3 + H * 0.95, br = Math.sin(t * 2) * 0.006;
   const front = o.arms === 'front';
-  const tilt = [Math.sin(t * 0.9) * 2 * D + (o.headPitch || 0) * D, (o.headYaw || 0) * D + Math.sin(t * 0.5) * 3 * D, Math.sin(t * 0.7) * 2 * D];
+  const A = o.acts, eTurn = A?.some((x) => x.k === 'turn') ? 1 - sstep(...(([x]) => [x.a, x.b])(A.filter((x) => x.k === 'turn')), t) : 0;
+  const eWave = env(A, 'wave', t), eCheer = env(A, 'cheer', t), eTalk = env(A, 'talk', t);
+  const hopW = (A || []).find((x) => x.k === 'hop' && t > x.a && t < x.b);
+  const hop = hopW ? Math.abs(Math.sin((Math.PI * (t - hopW.a)) / 0.55)) * 0.16 : 0;
+  const mouth = eTalk * Math.abs(Math.sin(t * 11)) * (0.6 + 0.4 * Math.sin(t * 3.1));
+  const tilt = [Math.sin(t * 0.9) * 2 * D + (o.headPitch || 0) * D - eCheer * 10 * D, (o.headYaw || 0) * D * (A ? eTurn : 1) + Math.sin(t * 0.5) * 3 * D, Math.sin(t * 0.7) * 2 * D + eWave * Math.sin(t * 3) * 4 * D];
+  const mix3 = (a, b, e) => a.map((v, i) => v + (b[i] - v) * e);
   return (
-    <group>
+    <group position={[0, hop, 0]}>
       {[-1, 1].map((k) => (
         <group key={k}>
           <Mx p={[k * 0.08, 0.05, 0.03]} m={mat.shoes}><boxGeometry args={[0.1, 0.1, 0.19]} /></Mx>
@@ -362,7 +370,11 @@ const Pers = ({o, t}) => {
       {o.backpack && <Mx p={[0, 0.98, -0.18]} m={mat.inner}><boxGeometry args={[0.26, 0.32, 0.12]} /></Mx>}
       <Lb a={[0, 1.2, 0]} b={[0, 1.3, 0]} r={0.042} m={mat.skin} />
       {[-1, 1].map((k) => {
-        const sh = [k * 0.2, 1.17, 0], el = front ? [k * 0.21, 0.94, 0.05] : [k * 0.23, 0.92, -0.01], ha = front ? [k * 0.05, 0.8, 0.16] : [k * 0.24, 0.7, 0.01];
+        const sh = [k * 0.2, 1.17, 0];
+        let el = front ? [k * 0.21, 0.94, 0.05] : [k * 0.23, 0.92, -0.01], ha = front ? [k * 0.05, 0.8, 0.16] : [k * 0.24, 0.7, 0.01];
+        const up = Math.max(eCheer, k === 1 ? eWave : 0);
+        el = mix3(el, [k * 0.31, 1.32, 0.02], up);
+        ha = mix3(ha, [k * (0.27 + (k === 1 ? eWave * 0.07 * Math.sin(t * 11) : 0)), 1.58 + eCheer * Math.sin(t * 9 + k) * 0.03, 0.06], up);
         return (
           <group key={k}>
             <Lb a={sh} b={el} r={0.05} m={mat.top} />
@@ -389,6 +401,9 @@ const Pers = ({o, t}) => {
           {o.hair === 'bun' && <Mx p={[0, H * 1.55, -H * 0.5]} m={mat.hair}><boxGeometry args={[H * 0.8, H * 0.7, H * 0.8]} /></Mx>}
           {o.hair === 'cap' && <Mx p={[0, H * 1.0, H * 1.2]} m={mat.inner}><boxGeometry args={[H * 1.7, H * 0.1, H * 0.9]} /></Mx>}
         </>}
+        {mouth > 0.02 && (round
+          ? <Mx p={[0, -H * 0.44, H * 0.93]} r={[25 * D, 0, 0]} m={mat.dark}><boxGeometry args={[H * 0.42, H * 0.3 * mouth, H * 0.05]} /></Mx>
+          : <Mx p={[0, -H * 0.48, H * 0.86]} m={mat.dark}><boxGeometry args={[H * 0.4, H * 0.32 * mouth, H * 0.02]} /></Mx>)}
         {o.glasses && [-1, 1].map((k) => (
           <Mx key={k} p={[k * H * 0.42, H * (round ? 0.12 : 0.1), H * (round ? 1.02 : 0.88)]} m={mat.dark}><torusGeometry args={[H * 0.3, H * 0.05, 4, 8]} /></Mx>
         ))}
