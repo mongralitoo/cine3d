@@ -208,4 +208,87 @@ const Guy = ({o, t}) => {
   );
 };
 
-export const custom = {Robot, Cat, Floor, Guy};
+// ---- PS1-style character: boxy head with a painted pixel face (original design) ----
+const canvasTex = (w, h, draw) => {
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h; draw(cv.getContext('2d'));
+  const t = new THREE.CanvasTexture(cv);
+  t.magFilter = t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+};
+const L = ({m}) => <meshLambertMaterial {...m} />;
+const Limb = ({a, b, r, color}) => {
+  const A = new THREE.Vector3(...a), Bv = new THREE.Vector3(...b), d = Bv.clone().sub(A);
+  const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.clone().normalize());
+  return (
+    <mesh position={A.clone().add(Bv).multiplyScalar(0.5)} quaternion={q}>
+      <cylinderGeometry args={[r, r * 0.9, d.length(), 5]} /><meshLambertMaterial color={color} />
+    </mesh>
+  );
+};
+const SK = '#e6b48f', COAT = '#e2b62f', HAIR = '#2a211c';
+
+const Retro = ({o, t}) => {
+  const face = useMemo(() => canvasTex(32, 32, (g) => {
+    const px = (c, x, y, w = 1, h = 1) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
+    px(SK, 0, 0, 32, 32);
+    px('#d99c7a', 15, 19, 2, 1);                                     // nose shade
+    px('#f0a39a', 5, 18, 5, 2); px('#f0a39a', 22, 18, 5, 2);          // blush
+    for (const x of [7, 21]) { px('#1d1512', x, 12, 4, 5); px('#ffffff', x + 1, 13, 1, 1); px('#5a3a2c', x, 16, 4, 1); }
+    px('#3a2a22', 6, 9, 5, 1); px('#3a2a22', 11, 10, 1, 1); px('#3a2a22', 21, 9, 5, 1); px('#3a2a22', 20, 10, 1, 1); // worried brows
+    px('#7a3b33', 14, 23, 4, 1); px('#5a2a24', 15, 24, 2, 1);        // small mouth
+  }), []);
+  const mats = useMemo(() => {
+    const sk = {color: SK}, f = {map: face};
+    return [sk, sk, sk, sk, f, sk].map((m) => new THREE.MeshLambertMaterial(m));
+  }, [face]);
+  const tilt = Math.sin(t * 0.9) * 2 * D, look = Math.sin(t * 0.5) * 4 * D;
+  return (
+    <group>
+      {[-1, 1].map((k) => (
+        <group key={k}>
+          <mesh position={[k * 0.08, 0.07, 0.02]}><boxGeometry args={[0.11, 0.14, 0.2]} /><L m={{color: '#24364a'}} /></mesh>
+          <Limb a={[k * 0.08, 0.13, 0]} b={[k * 0.08, 0.66, 0]} r={0.055} color="#2d3550" />
+        </group>
+      ))}
+      <mesh position={[0, 0.93, 0]} scale={[1, 1, 0.8]}><cylinderGeometry args={[0.17, 0.23, 0.64, 6]} /><L m={{color: COAT}} /></mesh>
+      {[0, 1, 2].map((i) => <mesh key={i} position={[0, 1.08 - i * 0.14, 0.15]}><boxGeometry args={[0.03, 0.03, 0.02]} /><L m={{color: '#3a3a3a'}} /></mesh>)}
+      <mesh position={[0, 1.24, -0.06]}><boxGeometry args={[0.3, 0.1, 0.18]} /><L m={{color: '#c99a22'}} /></mesh>
+      <Limb a={[0, 1.22, 0]} b={[0, 1.3, 0]} r={0.045} color={SK} />
+      {[-1, 1].map((k) => (
+        <group key={k}>
+          <Limb a={[k * 0.2, 1.18, 0]} b={[k * 0.21, 0.95, 0.05]} r={0.055} color={COAT} />
+          <Limb a={[k * 0.21, 0.95, 0.05]} b={[k * 0.05, 0.8, 0.16]} r={0.05} color={COAT} />
+          <mesh position={[k * 0.035, 0.78, 0.17]}><boxGeometry args={[0.06, 0.07, 0.05]} /><L m={{color: SK}} /></mesh>
+        </group>
+      ))}
+      <group position={[0, 1.42, 0]} rotation={[tilt + 4 * D, look, tilt]}>
+        <mesh material={mats}><boxGeometry args={[0.23, 0.26, 0.22]} /></mesh>
+        <mesh position={[0, 0.15, -0.01]}><boxGeometry args={[0.26, 0.08, 0.25]} /><L m={{color: HAIR}} /></mesh>
+        <mesh position={[0, 0.02, -0.12]}><boxGeometry args={[0.26, 0.26, 0.05]} /><L m={{color: HAIR}} /></mesh>
+        {[-1, 1].map((k) => <mesh key={k} position={[k * 0.125, 0.05, -0.02]}><boxGeometry args={[0.03, 0.18, 0.2]} /><L m={{color: HAIR}} /></mesh>)}
+        {[[-0.07, 0.1, 6], [0, 0.085, -3], [0.07, 0.1, -8]].map(([x, y, r], i) => (
+          <mesh key={i} position={[x, y, 0.112]} rotation={[0, 0, r * D]}><boxGeometry args={[0.09, 0.07, 0.03]} /><L m={{color: HAIR}} /></mesh>
+        ))}
+      </group>
+    </group>
+  );
+};
+
+// Pixel speech bubble: text drawn on a tiny canvas, shown with nearest filtering.
+const Sign = ({o}) => {
+  const tex = useMemo(() => canvasTex(96, 64, (g) => {
+    g.fillStyle = '#000'; g.beginPath(); g.roundRect(1, 1, 86, 50, 10); g.fill();
+    g.fillStyle = '#efece4'; g.beginPath(); g.roundRect(2, 2, 84, 48, 9); g.fill();
+    g.beginPath(); g.moveTo(14, 49); g.lineTo(4, 62); g.lineTo(26, 49); g.fill();
+    g.fillStyle = '#111'; g.font = 'bold 12px monospace'; g.textAlign = 'center';
+    (o.lines || ['...']).forEach((l, i, a) => g.fillText(l, 44, 30 - (a.length - 1) * 7 + i * 14));
+  }), []);
+  return (
+    <mesh scale={o.w || 0.75} >
+      <planeGeometry args={[1, 64 / 96]} />
+      <meshBasicMaterial map={tex} transparent alphaTest={0.5} />
+    </mesh>
+  );
+};
+
+export const custom = {Robot, Cat, Floor, Guy, Retro, Sign};

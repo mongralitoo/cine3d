@@ -15,16 +15,21 @@ void main(){ vec3 c = texture2D(tex, vUv).rgb * 0.227027;
   gl_FragColor = vec4(c, 1.); }`;
 const FINAL = `#include <packing>
 uniform sampler2D tex, depth, b1, b2; uniform vec2 px;
-uniform float near, far, focus, maxR, bloom, hal, grain, vig, seed, expo, aspect;
+uniform float near, far, focus, maxR, bloom, hal, grain, vig, seed, expo, aspect, lines, levels, crt;
 varying vec2 vUv;
 float vz(vec2 uv){ return -perspectiveDepthToViewZ(texture2D(depth, uv).x, near, far); }
 float coc(float z){ return clamp(abs(z - focus) / max(z, 0.001) * 1.6, 0., 1.); }
 float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233)) + seed) * 43758.5453); }
+float dith2(vec2 a){ a = floor(a); return fract(a.x / 2. + a.y * a.y * .75); }
+float B4(vec2 a){ return dith2(.5 * a) * .25 + dith2(a); }
 void main(){
-  float z0 = vz(vUv), c0 = coc(z0), jit = hash(vUv / px + 7.) * 6.2832; vec3 acc = texture2D(tex, vUv).rgb; float w = 1.;
+  vec2 grid = vec2(lines * aspect, lines);
+  vec2 uv0 = lines > 0. ? (floor(vUv * grid) + 0.5) / grid : vUv;   // retro: sample on a coarse pixel grid
+  float z0 = vz(uv0), c0 = coc(z0), jit = hash(vUv / px + 7.) * 6.2832; vec3 acc = texture2D(tex, uv0).rgb; float w = 1.;
+  if (crt > 0.) { vec2 o = vec2(crt * 1.2 / max(grid.x, 1.), 0.); acc.r = texture2D(tex, uv0 + o).r; acc.b = texture2D(tex, uv0 - o).b; }
   if (maxR > 0.5) for (int i = 1; i < 48; i++) {
     float fi = float(i), r = sqrt(fi / 48.), a = fi * 2.399963 + jit;
-    vec2 uv = vUv + vec2(cos(a), sin(a)) * r * maxR * px;
+    vec2 uv = uv0 + vec2(cos(a), sin(a)) * r * maxR * px;
     float zs = vz(uv), cs = coc(zs);
     if (zs > z0) cs = min(cs, c0);            // background must not bleed over a sharp foreground
     float k = smoothstep(r - 0.08, r + 0.08, cs);
@@ -37,6 +42,8 @@ void main(){
   vec2 q = (vUv - 0.5) * vec2(max(aspect, 1.), max(1. / aspect, 1.));
   c *= 1. - vig * smoothstep(0.35, 1.05, length(q) * 1.25);
   c = pow(c, vec3(1. / 2.2));
+  if (levels > 0.) c = floor(c * levels + B4(floor(vUv * grid)) * 0.8) / levels;   // reduced palette with ordered dither
+  if (crt > 0.) c *= 1. - 0.1 * crt * step(0.5, fract(vUv.y * grid.y));            // scanlines
   float lum = dot(c, vec3(0.299, 0.587, 0.114));
   c += (hash(vUv / px) - 0.5) * grain * (1. - lum * 0.6);
   gl_FragColor = vec4(c, 1.);
@@ -52,7 +59,7 @@ export const Post = ({focusPoint, fstop, look, frame}) => {
     const mat = (frag, u) => new THREE.ShaderMaterial({vertexShader: VERT, fragmentShader: frag, uniforms: u, depthTest: false, depthWrite: false, toneMapped: false});
     const bright = mat(BRIGHT, {tex: {value: null}, th: {value: 1}});
     const blur = mat(BLUR, {tex: {value: null}, dir: {value: new THREE.Vector2()}});
-    const fin = mat(FINAL, Object.fromEntries(['tex', 'depth', 'b1', 'b2', 'px', 'near', 'far', 'focus', 'maxR', 'bloom', 'hal', 'grain', 'vig', 'seed', 'expo', 'aspect'].map((k) => [k, {value: null}])));
+    const fin = mat(FINAL, Object.fromEntries(['tex', 'depth', 'b1', 'b2', 'px', 'near', 'far', 'focus', 'maxR', 'bloom', 'hal', 'grain', 'vig', 'seed', 'expo', 'aspect', 'lines', 'levels', 'crt'].map((k) => [k, {value: null}])));
     const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), bright);
     const sc = new THREE.Scene(); sc.add(quad);
     return {w, h, main, q, e, bright, blur, fin, quad, sc, cam: new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)};
@@ -75,6 +82,7 @@ export const Post = ({focusPoint, fstop, look, frame}) => {
     u.maxR.value = f; u.bloom.value = look.bloom ?? 0.22; u.hal.value = look.halation ?? 0.1;
     u.grain.value = look.grain ?? 0.06; u.vig.value = look.vignette ?? 0.45; u.seed.value = (frame % 97) * 0.731;
     u.expo.value = look.exposure ?? 1; u.aspect.value = w / h;
+    const R = look.retro || {}; u.lines.value = R.lines ?? 0; u.levels.value = R.levels ?? 0; u.crt.value = R.crt ?? 0;
     pass(fin, null);
   }, 1);
   return null;

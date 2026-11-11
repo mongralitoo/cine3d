@@ -27,6 +27,28 @@ const sample = (keys, t, fps, ease = 'smooth') => {
   return out;
 };
 
+// Pixel textures (32x32, nearest filtering): tiles | bricks | wood | noise. Tinted by the object's colour.
+const TEX = {};
+const h2 = (x, y, s) => { const n = Math.sin(x * 127.1 + y * 311.7 + s * 74.7) * 43758.5453; return n - Math.floor(n); };
+const makeTex = (kind, color) => {
+  const key = kind + color;
+  if (TEX[key]) return TEX[key];
+  const N = 32, cv = document.createElement('canvas'); cv.width = cv.height = N;
+  const g = cv.getContext('2d'), base = new THREE.Color(color), c = new THREE.Color();
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    let k = 0.9 + h2(x, y, 1) * 0.18;
+    if (kind === 'tiles') k = x % 16 === 0 || y % 16 === 0 ? 0.55 : k + (h2(x >> 4, y >> 4, 2) - 0.5) * 0.16;
+    if (kind === 'bricks') { const off = (y >> 3) % 2 ? 8 : 0; k = (x + off) % 16 === 0 || y % 8 === 0 ? 0.68 : k + (h2((x + off) >> 4, y >> 3, 3) - 0.5) * 0.14; }
+    if (kind === 'wood') k = 0.82 + 0.12 * Math.sin(y * 0.9 + h2(0, y >> 2, 4) * 3) + h2(x, y, 5) * 0.08 - (x % 32 === 0 ? 0.25 : 0);
+    g.fillStyle = c.copy(base).multiplyScalar(k).getStyle();
+    g.fillRect(x, y, 1, 1);
+  }
+  const t = new THREE.CanvasTexture(cv);
+  t.magFilter = t.minFilter = THREE.NearestFilter; t.generateMipmaps = false;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace;
+  return (TEX[key] = t);
+};
+
 const PRESETS = {
   studio: {env: 0.55, lights: [
     {pos: [5, 8, 6], color: '#fff4e6', power: 3.2, shadow: true},
@@ -88,6 +110,12 @@ const Geo = ({o}) => {
 
 // One object instance; i = index inside a grid (drives stagger and phase).
 const Item = ({o, t, fps, i, offset}) => {
+  const map = useMemo(() => {
+    if (!o.tex) return null;
+    const m = makeTex(o.tex, o.color || '#cccccc').clone(), s = o.size || [1, 1, 1], ts = o.texScale || 1;
+    m.repeat.set(s[0] / ts, s[1] / ts); m.needsUpdate = true;
+    return m;
+  }, [o.tex, o.color, o.texScale, (o.size || []).join()]);
   let pos = [...(o.pos || [0, 0, 0])], rot = (o.rot || [0, 0, 0]).map(rad), sc = o.scale ?? 1, op = o.opacity ?? 1;
   if (o.keys) {
     const k = sample(o.keys, t, fps, o.ease);
@@ -114,7 +142,7 @@ const Item = ({o, t, fps, i, offset}) => {
   return (
     <mesh position={pos} rotation={rot} scale={sc} castShadow receiveShadow>
       <Geo o={o} />
-      <meshPhysicalMaterial color={o.color || '#d8d8d8'} roughness={o.rough ?? 0.4} metalness={o.metal ?? 0}
+      <meshPhysicalMaterial map={map} color={map ? '#ffffff' : o.color || '#d8d8d8'} roughness={o.rough ?? 0.4} metalness={o.metal ?? 0}
         emissive={o.glow || '#000000'} emissiveIntensity={o.glowPower ?? (o.glow ? 1.4 : 0)} clearcoat={o.coat ?? 0}
         clearcoatRoughness={0.15} transparent={op < 1} opacity={op} side={o.shape === 'plane' ? THREE.DoubleSide : THREE.FrontSide} {...glass} />
     </mesh>
