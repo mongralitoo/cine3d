@@ -1,0 +1,138 @@
+{
+ "duration": 4,
+ "aspect": "16:9",
+ "look": {
+  "bg": "#0b0c10"
+ },
+ "lights": "dramatic",
+ "camera": {
+  "lens": 85,
+  "fstop": 2,
+  "ease": "spring",
+  "keys": [
+   {
+    "t": 0,
+    "pos": [
+     5,
+     1.6,
+     9
+    ],
+    "look": [
+     0,
+     1.1,
+     0
+    ]
+   },
+   {
+    "t": 4,
+    "pos": [
+     -2.5,
+     1.9,
+     7.5
+    ],
+    "look": [
+     0,
+     1.1,
+     0
+    ]
+   }
+  ]
+ },
+ "floor": {
+  "color": "#0e0f13",
+  "rough": 0.6
+ },
+ "objects": [
+  {
+   "shape": "sphere",
+   "size": [
+    1.6
+   ],
+   "pos": [
+    0,
+    1.1,
+    0
+   ],
+   "color": "#c9a063",
+   "metal": 1,
+   "rough": 0.22,
+   "in": {
+    "kind": "pop",
+    "at": 0.2
+   },
+   "float": [
+    0.06,
+    0.3
+   ]
+  },
+  {
+   "shape": "torus",
+   "size": [
+    2.6,
+    0.08
+   ],
+   "pos": [
+    0,
+    1.1,
+    0
+   ],
+   "rot": [
+    70,
+    0,
+    0
+   ],
+   "color": "#ffffff",
+   "glow": "#ffb060",
+   "spin": [
+    0,
+    0.12,
+    0
+   ],
+   "in": {
+    "kind": "pop",
+    "at": 0.5
+   }
+  },
+  {
+   "shape": "box",
+   "size": [
+    0.5,
+    0.5,
+    0.5
+   ],
+   "pos": [
+    0,
+    0.25,
+    -3
+   ],
+   "color": "#2a2d36",
+   "rough": 0.6,
+   "grid": {
+    "n": [
+     9,
+     1,
+     3
+    ],
+    "gap": [
+     1.1,
+     0,
+     1.4
+    ]
+   },
+   "in": {
+    "kind": "rise",
+    "at": 0.3,
+    "stagger": 0.04,
+    "dist": 1
+   }
+  }
+ ],
+ "titles": [
+  {
+   "text": "Cinematic 3D",
+   "at": 1.6,
+   "place": "bottom",
+   "size": 0.07
+  }
+ ]
+}
